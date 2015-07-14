@@ -62,7 +62,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <h2>Evaluating Fuel Economy of Manual vs. Automatic Transmissions using Regression Analysis</h2>
 <div id="executive-summary" class="section level3">
 <h3>Executive Summary</h3>
-<p>There is a common belief that cars with a manual transmission are more fuel-efficient than automatics. Using 1974 <a href="https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html">data</a> from <em>Motor Trends</em> we can analyze this claim using linear regression analysis. Based on the analysis presented below, although manual transmission cars get on average 7.24 more miles per gallon than automatic cars, we can confidently say that this is because automatic transmission vehicles weigh more, and therefore have lower gas mileage. Based on these data, we do not believe that manual transmission vehicles have a better gas mileage, once you account for the weight of the vehicle.</p>
+<p>There is a common belief that cars with a manual transmission are more fuel-efficient than automatics. Using 1974 <a href="https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html">data</a> from <em>Motor Trends</em> we can analyze this claim using linear regression analysis. Based on the analysis presented below, manual transmission cars get on average 7.24 more miles per gallon than automatic cars. Although tempered, this main effect remains significant at the 5% confidence level, even when controlling for weight and acceleration of the vehicle.</p>
 </div>
 <div id="research-question" class="section level3">
 <h3>Research Question</h3>
@@ -103,7 +103,7 @@ str(mtcars)</code></pre>
 ##  Mean   :0.4062   Mean   :3.688   Mean   :2.812  
 ##  3rd Qu.:1.0000   3rd Qu.:4.000   3rd Qu.:4.000  
 ##  Max.   :1.0000   Max.   :5.000   Max.   :8.000</code></pre>
-<p>Specifically, our variables of interest are mpg and am, which is coded to 0 for automatic transmissions, and 1 for manual transmission. We can regress<br /><span class="math">\[\tiny(1) \normalsize \hspace{1cm} Y_i = \beta_0 + \beta_1 X_i + \epsilon_i\]</span><br />where <span class="math">\(X_i\)</span> is the <em>as</em> variable in the mtcars dataset. Simple Least Squares regression will give the average mpg for automatics (<span class="math">\(X = 0\)</span>) and <span class="math">\(\beta_1\)</span> will give the added average miles per gallon of a manual transmission. Looking at just the transmission, we can see that automatic transmission vehicles have an average of 17.15 miles per gallon, and manuals get an additional 7.24 miles per gallon on average (24.39 total).</p>
+<p>Specifically, our variables of interest are mpg and am, which is coded to 0 for automatic transmissions, and 1 for manual transmission. We can regress<br /><span class="math">\[\tiny (1) \normalsize \hspace{1cm} Y_i = \beta_0 + \beta_1 X_i + \epsilon_i\]</span><br />where <span class="math">\(X_i\)</span> is the <em>as</em> variable in the mtcars dataset. Simple Least Squares regression will give the average mpg for automatics (<span class="math">\(X = 0\)</span>) and <span class="math">\(\beta_1\)</span> will give the added average miles per gallon of a manual transmission. Looking at just the transmission, we can see that automatic transmission vehicles have an average of 17.15 miles per gallon, and manuals get an additional 7.24 miles per gallon on average (24.39 total).</p>
 <pre class="r"><code>model &lt;- lm(mpg ~ am, data=mtcars)
 summary(model)$coef</code></pre>
 <pre><code>##              Estimate Std. Error   t value     Pr(&gt;|t|)
@@ -112,20 +112,45 @@ summary(model)$coef</code></pre>
 </div>
 <div id="correction-for-car-weight" class="section level3">
 <h3>Correction for Car Weight</h3>
-<p>Before jumping to the conclusion that manual transmissions are more fuel efficient, we should try to control for other variables in the dataset. Specifically, let’s look at the number of cylinders, horsepower, and vehicle weight.<br /><span class="math">\[\tiny(2) \normalsize \hspace{1cm} Y_i = \beta_0 + \beta_1 X_i + \sum \beta_j X_ij + \epsilon_i\]</span><br />where <span class="math">\(\beta_1\)</span> is the coefficient for the dummy variable <em>as</em> and the sum of <span class="math">\(\beta_j\)</span> and <span class="math">\(X_j\)</span> includes the <em>cyl, hp,</em> and <em>wt</em> variables from the data frame.</p>
-<pre class="r"><code>model &lt;- lm(mpg ~ am + cyl + hp + wt, data=mtcars)
+<p>Before jumping to the conclusion that manual transmissions are more fuel efficient, we should try to control for other variables in the dataset. <span class="math">\[\tiny(2) \normalsize \hspace{1cm} Y_i = \beta_0 + \beta_1 X_i + \sum \beta_j X_ij + \epsilon_i\]</span><br />where <span class="math">\(\beta_1\)</span> is the coefficient for the dummy variable <em>as</em> and the sum of <span class="math">\(\beta_j\)</span> and <span class="math">\(X_j\)</span> includes all other variables.</p>
+<pre class="r"><code>model &lt;- lm(mpg ~ ., data=mtcars)
 summary(model)$coef</code></pre>
-<pre><code>##                Estimate Std. Error   t value     Pr(&gt;|t|)
-## (Intercept) 36.14653575 3.10478079 11.642218 4.944804e-12
-## am           1.47804771 1.44114927  1.025603 3.141799e-01
-## cyl         -0.74515702 0.58278741 -1.278609 2.119166e-01
-## hp          -0.02495106 0.01364614 -1.828433 7.855337e-02
-## wt          -2.60648071 0.91983749 -2.833632 8.603218e-03</code></pre>
-<p>Controlling for weight, manual vs. automatic ceases to be a statistically significant predictor of gas mileage</p>
+<pre><code>##                Estimate  Std. Error    t value   Pr(&gt;|t|)
+## (Intercept) 12.30337416 18.71788443  0.6573058 0.51812440
+## cyl         -0.11144048  1.04502336 -0.1066392 0.91608738
+## disp         0.01333524  0.01785750  0.7467585 0.46348865
+## hp          -0.02148212  0.02176858 -0.9868407 0.33495531
+## drat         0.78711097  1.63537307  0.4813036 0.63527790
+## wt          -3.71530393  1.89441430 -1.9611887 0.06325215
+## qsec         0.82104075  0.73084480  1.1234133 0.27394127
+## vs           0.31776281  2.10450861  0.1509915 0.88142347
+## am           2.52022689  2.05665055  1.2254035 0.23398971
+## gear         0.65541302  1.49325996  0.4389142 0.66520643
+## carb        -0.19941925  0.82875250 -0.2406258 0.81217871</code></pre>
+<div id="model-selection" class="section level4">
+<h4>Model Selection</h4>
+<p>using the <code>AIC</code> function in R, we systematically removed variables, one at a time, until we could minimize the AIC output. Below are a subset of the models reviewed</p>
+<pre class="r"><code>AIC(lm(mpg ~ wt + cyl + disp + hp + drat + qsec + vs + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 163.7098</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 159.7853</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 156.2687</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 154.1194</code></pre>
+<pre class="r"><code>#Removing any more raises the AIC
+AIC(lm(mpg ~ qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 175.6022</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + am,data=mtcars))</code></pre>
+<pre><code>## [1] 168.0292</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + qsec,data=mtcars))</code></pre>
+<pre><code>## [1] 156.7205</code></pre>
+<p>After controlling for weight and the time to drive one 4th of a mile, manual vs. automatic is still a statistically significant predictor of gas mileage at the 5%, but not at the 1% level, and furthermore, the magnitude is less than the effect of weight once you control for the other two variables. Our final model is <span class="math">\[\tiny(2) \normalsize \hspace{1cm} Y_i = \beta_0 + \beta_1 wt_i + \beta_2 qsec_i + \beta_3 am_i + \epsilon_i\]</span><br />Where <em>wt</em> is the car weight (in 1000 lbs), <em>qsec</em> is the time to drive one quarter mile, and <em>am</em> is a dummy variable where 0=automatic and 1=manual.</p>
+</div>
 </div>
 <div id="conclusions" class="section level3">
 <h3>Conclusions</h3>
-<p>Despite the fact that manual transmission vehicles do, on average, have a better gas mileage, when controling for the number of cylinders, horsepower, and most importantly vehicle weight, this difference ceases to be substantive or significant. This spurious relationship between mpg, transmission, is very well illustrated by the following graph.</p>
+<p>After controlling for other factors and validating the model using the Akaike Information Criterion (AIC), we conclude that manual transmission vehicles do, on average, have a better gas mileage. This relationship between mpg, transmission, and weight is very well illustrated by the following graph.</p>
 <pre class="r"><code>library(ggplot2)
 q&lt;-qplot(x=wt,y=mpg,data=mtcars,colour=as.factor(am))
 q&lt;-q + scale_color_discrete(name=&quot;Transmission&quot;,labels=c(&quot;Automatic&quot;,&quot;Manual&quot;))
@@ -133,8 +158,121 @@ q&lt;-q + ggtitle(&quot;Miles per Gallon by Weight and Transmission&quot;)
 q&lt;-q + xlab(&quot;Weight (1000lbs)&quot;) + ylab(&quot;Miles Per Gallon&quot;)
 q</code></pre>
 <p><img src="data:image/png;base64,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" /></p>
-<p>So we can see clearly that automatics tend to be both heavier and have a lower gas mileage, but comparibly weighted manual transmission vehicles tend to have comparible gas mileage. The 7.24 miles-per-gallon difference that we saw on average between manual and automatic vehicles in figure (1) was primarily due not the the better fuel efficiency of automatic transmissions, but the fact that most automatic transmission cars also tend to weigh less than automatics and have less horsepower, as seen in equation (2).</p>
+<p>So we can see clearly that automatics tend to be both heavier and have a lower gas mileage, but comparibly weighted manual transmission vehicles still tend to have slightly better gas mileage, as seen with equation (3).</p>
 </div>
+</div>
+<div id="appendix" class="section level2">
+<h2>Appendix</h2>
+<pre class="r"><code>#All Variables
+AIC(lm(mpg ~ .,data=mtcars))</code></pre>
+<pre><code>## [1] 163.7098</code></pre>
+<pre class="r"><code>#One Variable Removed
+AIC(lm(mpg ~ cyl + disp + hp + drat + qsec + vs + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 167.0917</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 161.7271</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + cyl + hp + drat + qsec + vs + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 162.5485</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + cyl + disp + hp + qsec + vs + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 162.0609</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + cyl + disp + hp + drat + vs + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 163.5774</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + cyl + disp + hp + drat + qsec + vs + am + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 162.002</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + cyl + disp + hp + drat + qsec + vs + am + gear,data=mtcars))</code></pre>
+<pre><code>## [1] 161.7979</code></pre>
+<pre class="r"><code>#Two Variables Removed
+AIC(lm(mpg ~ wt + hp + drat + qsec + vs + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 160.562</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + drat + qsec + vs + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 161.2852</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + qsec + vs + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 160.1542</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + vs + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 161.8442</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 159.7853</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 162.1959</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + am + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 160.1196</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + am + gear,data=mtcars))</code></pre>
+<pre><code>## [1] 159.8397</code></pre>
+<pre class="r"><code>#Three Variables Removed
+AIC(lm(mpg ~ disp + hp + drat + qsec + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 163.2224</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + hp + drat + qsec + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 158.565</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + drat + qsec + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 159.2875</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + qsec + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 158.2609</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + am + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 161.0116</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + gear + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 160.1963</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + carb,data=mtcars))</code></pre>
+<pre><code>## [1] 158.246</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + gear,data=mtcars))</code></pre>
+<pre><code>## [1] 157.9333</code></pre>
+<pre class="r"><code>#Four Variables Removed
+AIC(lm(mpg ~ disp + hp + drat + qsec + am + gear,data=mtcars))</code></pre>
+<pre><code>## [1] 168.1617</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + hp + drat + qsec + am + gear,data=mtcars))</code></pre>
+<pre><code>## [1] 158.0406</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + drat + qsec + am + gear,data=mtcars))</code></pre>
+<pre><code>## [1] 158.9779</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + qsec + am + gear,data=mtcars))</code></pre>
+<pre><code>## [1] 156.3469</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + am + gear,data=mtcars))</code></pre>
+<pre><code>## [1] 161.17</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + gear,data=mtcars))</code></pre>
+<pre><code>## [1] 158.4839</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 156.2687</code></pre>
+<pre class="r"><code>#Five Variables Removed
+AIC(lm(mpg ~ disp + hp + drat + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 166.1632</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + hp + drat + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 156.0406</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + drat + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 156.9826</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 154.974</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + am,data=mtcars))</code></pre>
+<pre><code>## [1] 159.3035</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + drat + qsec,data=mtcars))</code></pre>
+<pre><code>## [1] 158.2784</code></pre>
+<pre class="r"><code>#Six Variables Removed
+AIC(lm(mpg ~ disp + hp + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 164.8634</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + hp + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 154.3274</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 155.494</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + am,data=mtcars))</code></pre>
+<pre><code>## [1] 158.0667</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + disp + hp + qsec,data=mtcars))</code></pre>
+<pre><code>## [1] 159.0696</code></pre>
+<pre class="r"><code>#Seven Variables Removed
+AIC(lm(mpg ~ hp + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 165.0964</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 154.1194</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + hp + am,data=mtcars))</code></pre>
+<pre><code>## [1] 156.1348</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + hp + qsec,data=mtcars))</code></pre>
+<pre><code>## [1] 157.1426</code></pre>
+<pre class="r"><code>#Eight Variables Removed
+AIC(lm(mpg ~ qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 175.6022</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + am,data=mtcars))</code></pre>
+<pre><code>## [1] 168.0292</code></pre>
+<pre class="r"><code>AIC(lm(mpg ~ wt + qsec,data=mtcars))</code></pre>
+<pre><code>## [1] 156.7205</code></pre>
+<pre class="r"><code>#Final Model
+AIC(lm(mpg ~ wt + qsec + am,data=mtcars))</code></pre>
+<pre><code>## [1] 154.1194</code></pre>
 </div>
 
 
