@@ -38,8 +38,8 @@ where $\beta_1$ is the coefficient for the dummy variable *as* and the sum of $\
 model <- lm(mpg ~ ., data=mtcars)
 summary(model)$coef
 ```  
-####Model Selection####
-using the `AIC` function in R, we systematically removed variables, one at a time, until we could minimize the AIC output. Below are a subset of the models reviewed
+###Model Selection###
+Using the `AIC` function in R, we systematically removed variables, one at a time, until we could minimize the AIC output. Below are a subset of the models reviewed:
 ```{r}
 AIC(lm(mpg ~ wt + cyl + disp + hp + drat + qsec + vs + am + gear + carb,data=mtcars))
 AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + gear + carb,data=mtcars))
@@ -70,67 +70,3 @@ q
 ```  
 
 So we can see clearly that automatics tend to be both heavier and have a lower gas mileage, but comparibly weighted manual transmission vehicles still tend to have slightly better gas mileage, as seen with equation (3).
-
-##Appendix##
-```{r}
-#All Variables
-AIC(lm(mpg ~ .,data=mtcars))
-#One Variable Removed
-AIC(lm(mpg ~ cyl + disp + hp + drat + qsec + vs + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + cyl + hp + drat + qsec + vs + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + cyl + disp + hp + qsec + vs + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + cyl + disp + hp + drat + vs + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + cyl + disp + hp + drat + qsec + vs + am + carb,data=mtcars))
-AIC(lm(mpg ~ wt + cyl + disp + hp + drat + qsec + vs + am + gear,data=mtcars))
-#Two Variables Removed
-AIC(lm(mpg ~ wt + hp + drat + qsec + vs + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + drat + qsec + vs + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + qsec + vs + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + vs + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + am + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + am + gear,data=mtcars))
-#Three Variables Removed
-AIC(lm(mpg ~ disp + hp + drat + qsec + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + hp + drat + qsec + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + drat + qsec + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + qsec + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + am + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + gear + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + carb,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + gear,data=mtcars))
-#Four Variables Removed
-AIC(lm(mpg ~ disp + hp + drat + qsec + am + gear,data=mtcars))
-AIC(lm(mpg ~ wt + hp + drat + qsec + am + gear,data=mtcars))
-AIC(lm(mpg ~ wt + disp + drat + qsec + am + gear,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + qsec + am + gear,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + am + gear,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + gear,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am,data=mtcars))
-#Five Variables Removed
-AIC(lm(mpg ~ disp + hp + drat + qsec + am,data=mtcars))
-AIC(lm(mpg ~ wt + hp + drat + qsec + am,data=mtcars))
-AIC(lm(mpg ~ wt + disp + drat + qsec + am,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + qsec + am,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + am,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec,data=mtcars))
-#Six Variables Removed
-AIC(lm(mpg ~ disp + hp + qsec + am,data=mtcars))
-AIC(lm(mpg ~ wt + hp + qsec + am,data=mtcars))
-AIC(lm(mpg ~ wt + disp + qsec + am,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + am,data=mtcars))
-AIC(lm(mpg ~ wt + disp + hp + qsec,data=mtcars))
-#Seven Variables Removed
-AIC(lm(mpg ~ hp + qsec + am,data=mtcars))
-AIC(lm(mpg ~ wt + qsec + am,data=mtcars))
-AIC(lm(mpg ~ wt + hp + am,data=mtcars))
-AIC(lm(mpg ~ wt + hp + qsec,data=mtcars))
-#Eight Variables Removed
-AIC(lm(mpg ~ qsec + am,data=mtcars))
-AIC(lm(mpg ~ wt + am,data=mtcars))
-AIC(lm(mpg ~ wt + qsec,data=mtcars))
-#Final Model
-AIC(lm(mpg ~ wt + qsec + am,data=mtcars))
-```
