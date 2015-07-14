@@ -1,5 +1,5 @@
 ---
-title: "Regression Models Project 1"
+title: "Evaluating Fuel Economy of Manual vs. Automatic Transmissions using Regression Analysis"
 author: "Dann Hekman"
 date: "Saturday, March 07, 2015"
 output:
@@ -7,8 +7,6 @@ output:
   html_document:
     keep_md: yes
 ---
-
-##Evaluating Fuel Economy of Manual vs. Automatic Transmissions using Regression Analysis##
 
 ###Executive Summary###  
 There is a common belief that cars with a manual transmission are more fuel-efficient than automatics. Using 1974 [data](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html) from *Motor Trends* we can analyze this claim using linear regression analysis. Based on the analysis presented below, manual transmission cars get on average 7.24 more miles per gallon than automatic cars. Although tempered, this main effect remains significant at the 5% confidence level, even when controlling for weight and acceleration of the vehicle. 
@@ -18,6 +16,7 @@ We start our analysis by examining the claim that manual transmission cars have 
 ```{r Short Model A}
 data(mtcars)
 str(mtcars)
+library(ggplot2)
 ```  
 Specifically, our variables of interest are mpg and am, which is coded to 0 for automatic transmissions, and 1 for manual transmission. 
 We can regress  
@@ -54,14 +53,21 @@ After controlling for weight and the time to drive one 4th of a mile, manual vs.
 $$\tiny(3) \normalsize \hspace{1cm} Y_i = \beta_0 + \beta_1 wt_i + \beta_2 qsec_i + \beta_3 am_i + \epsilon_i$$  
 Where *wt* is the car weight (in 1000 lbs), *qsec* is the time to drive one quarter mile, and *am* is a dummy variable where 0=automatic and 1=manual.
 ```{r}
-summary(lm(mpg ~ wt + qsec + am,data=mtcars))$coef
+model<-lm(mpg ~ wt + qsec + am,data=mtcars)
+summary(model)$coef
 ```
+###Diagnostics###
+The validity of a linear regression model requires that the variance of the residuals be constant and that the residuals themselves are not closely correlated to the predictor variables used in the equation. We tested these assumptions using a resitual plot and by regression the residuals against the predictor variables.  
+```{r}
+qplot(x=mtcars$wt,y=model$resid) + ylim(-5,5) + xlab("Car Weight") + ylab("Residual") + ggtitle("Residual Plot for Regression Equation (3)")
+summary(lm(model$resid~wt+qsec+am,data=mtcars))
+```
+Thus we can conclude there is no heterskedasticity and no issues with a non-constant residual variance. 
 
 ###Conclusions###
 After controlling for other factors and validating the model using the Akaike Information Criterion (AIC), we conclude that manual transmission vehicles do, on average, have a better gas mileage. This relationship between mpg, transmission, and weight is very well illustrated by the following graph.
 
 ```{r Graph}
-library(ggplot2)
 q<-qplot(x=wt,y=mpg,data=mtcars,colour=as.factor(am))
 q<-q + scale_color_discrete(name="Transmission",labels=c("Automatic","Manual"))
 q<-q + ggtitle("Miles per Gallon by Weight and Transmission")
