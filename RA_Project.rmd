@@ -1,5 +1,6 @@
 ---
-title: "Evaluating Fuel Economy of Manual vs. Automatic Transmissions using Regression Analysis"
+title: Evaluating Fuel Economy of Manual vs. Automatic Transmissions using Regression
+  Analysis
 author: "Dann Hekman"
 date: "Saturday, March 07, 2015"
 output:
@@ -51,7 +52,7 @@ AIC(lm(mpg ~ wt + qsec,data=mtcars))
 ```
 After controlling for weight and the time to drive one 4th of a mile, manual vs. automatic is still a statistically significant predictor of gas mileage at the 5%, but not at the 1% level, and furthermore, the magnitude is less than the effect of weight once you control for the other two variables. Our final model is 
 $$\tiny(3) \normalsize \hspace{1cm} Y_i = \beta_0 + \beta_1 wt_i + \beta_2 qsec_i + \beta_3 am_i + \epsilon_i$$  
-Where *wt* is the car weight (in 1000 lbs), *qsec* is the time to drive one quarter mile, and *am* is a dummy variable where 0=automatic and 1=manual.
+Where *wt* is the car weight (in 1000 lbs), *qsec* is the time to drive one quarter mile, and *am* is a dummy variable where 0=automatic and 1=manual. This is only one of several possible model selection methods, and is notably limited in that it does not account for possible interaction terms or power models.   
 ```{r}
 model<-lm(mpg ~ wt + qsec + am,data=mtcars)
 summary(model)$coef
@@ -65,7 +66,7 @@ summary(lm(model$resid~wt+qsec+am,data=mtcars))
 Thus we can conclude there is no heterskedasticity and no issues with a non-constant residual variance. 
 
 ###Conclusions###
-After controlling for other factors and validating the model using the Akaike Information Criterion (AIC), we conclude that manual transmission vehicles do, on average, have a better gas mileage. This relationship between mpg, transmission, and weight is very well illustrated by the following graph.
+After controlling for other factors and validating the model using the Akaike Information Criterion (AIC), we conclude that manual transmission vehicles do, on average, have a better gas mileage by 2.94 mpg at the 5% confidence level. This relationship between mpg, transmission, and weight is very well illustrated by the following graph.
 
 ```{r Graph}
 q<-qplot(x=wt,y=mpg,data=mtcars,colour=as.factor(am))
@@ -75,4 +76,4 @@ q<-q + xlab("Weight (1000lbs)") + ylab("Miles Per Gallon")
 q
 ```  
 
-So we can see clearly that automatics tend to be both heavier and have a lower gas mileage, but comparibly weighted manual transmission vehicles still tend to have slightly better gas mileage, as seen with equation (3).
+So we can see clearly that automatics tend to be both heavier and have a lower gas mileage, but comparibly weighted manual transmission vehicles still tend to have slightly better gas mileage, as seen with equation (3). 

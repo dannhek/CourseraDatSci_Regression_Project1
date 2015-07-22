@@ -1,8 +1,6 @@
-# Regression Models Project 1
+# Evaluating Fuel Economy of Manual vs. Automatic Transmissions using Regression Analysis
 Dann Hekman  
 Saturday, March 07, 2015  
-
-##Evaluating Fuel Economy of Manual vs. Automatic Transmissions using Regression Analysis##
 
 ###Executive Summary###  
 There is a common belief that cars with a manual transmission are more fuel-efficient than automatics. Using 1974 [data](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html) from *Motor Trends* we can analyze this claim using linear regression analysis. Based on the analysis presented below, manual transmission cars get on average 7.24 more miles per gallon than automatic cars. Although tempered, this main effect remains significant at the 5% confidence level, even when controlling for weight and acceleration of the vehicle. 
@@ -31,31 +29,7 @@ str(mtcars)
 ```
 
 ```r
-summary(mtcars)
-```
-
-```
-##       mpg             cyl             disp             hp       
-##  Min.   :10.40   Min.   :4.000   Min.   : 71.1   Min.   : 52.0  
-##  1st Qu.:15.43   1st Qu.:4.000   1st Qu.:120.8   1st Qu.: 96.5  
-##  Median :19.20   Median :6.000   Median :196.3   Median :123.0  
-##  Mean   :20.09   Mean   :6.188   Mean   :230.7   Mean   :146.7  
-##  3rd Qu.:22.80   3rd Qu.:8.000   3rd Qu.:326.0   3rd Qu.:180.0  
-##  Max.   :33.90   Max.   :8.000   Max.   :472.0   Max.   :335.0  
-##       drat             wt             qsec             vs        
-##  Min.   :2.760   Min.   :1.513   Min.   :14.50   Min.   :0.0000  
-##  1st Qu.:3.080   1st Qu.:2.581   1st Qu.:16.89   1st Qu.:0.0000  
-##  Median :3.695   Median :3.325   Median :17.71   Median :0.0000  
-##  Mean   :3.597   Mean   :3.217   Mean   :17.85   Mean   :0.4375  
-##  3rd Qu.:3.920   3rd Qu.:3.610   3rd Qu.:18.90   3rd Qu.:1.0000  
-##  Max.   :4.930   Max.   :5.424   Max.   :22.90   Max.   :1.0000  
-##        am              gear            carb      
-##  Min.   :0.0000   Min.   :3.000   Min.   :1.000  
-##  1st Qu.:0.0000   1st Qu.:3.000   1st Qu.:2.000  
-##  Median :0.0000   Median :4.000   Median :2.000  
-##  Mean   :0.4062   Mean   :3.688   Mean   :2.812  
-##  3rd Qu.:1.0000   3rd Qu.:4.000   3rd Qu.:4.000  
-##  Max.   :1.0000   Max.   :5.000   Max.   :8.000
+library(ggplot2)
 ```
 Specifically, our variables of interest are mpg and am, which is coded to 0 for automatic transmissions, and 1 for manual transmission. 
 We can regress  
@@ -99,8 +73,8 @@ summary(model)$coef
 ## gear         0.65541302  1.49325996  0.4389142 0.66520643
 ## carb        -0.19941925  0.82875250 -0.2406258 0.81217871
 ```
-####Model Selection####
-using the `AIC` function in R, we systematically removed variables, one at a time, until we could minimize the AIC output. Below are a subset of the models reviewed
+###Model Selection###
+Using the `AIC` function in R, we systematically removed variables, one at a time, until we could minimize the AIC output. Below are a subset of the models reviewed:
 
 ```r
 AIC(lm(mpg ~ wt + cyl + disp + hp + drat + qsec + vs + am + gear + carb,data=mtcars))
@@ -159,15 +133,61 @@ AIC(lm(mpg ~ wt + qsec,data=mtcars))
 ## [1] 156.7205
 ```
 After controlling for weight and the time to drive one 4th of a mile, manual vs. automatic is still a statistically significant predictor of gas mileage at the 5%, but not at the 1% level, and furthermore, the magnitude is less than the effect of weight once you control for the other two variables. Our final model is 
-$$\tiny(2) \normalsize \hspace{1cm} Y_i = \beta_0 + \beta_1 wt_i + \beta_2 qsec_i + \beta_3 am_i + \epsilon_i$$  
-Where *wt* is the car weight (in 1000 lbs), *qsec* is the time to drive one quarter mile, and *am* is a dummy variable where 0=automatic and 1=manual.
+$$\tiny(3) \normalsize \hspace{1cm} Y_i = \beta_0 + \beta_1 wt_i + \beta_2 qsec_i + \beta_3 am_i + \epsilon_i$$  
+Where *wt* is the car weight (in 1000 lbs), *qsec* is the time to drive one quarter mile, and *am* is a dummy variable where 0=automatic and 1=manual. This is only one of several possible model selection methods, and is notably limited in that it does not account for possible interaction terms or power models.   
+
+```r
+model<-lm(mpg ~ wt + qsec + am,data=mtcars)
+summary(model)$coef
+```
+
+```
+##              Estimate Std. Error   t value     Pr(>|t|)
+## (Intercept)  9.617781  6.9595930  1.381946 1.779152e-01
+## wt          -3.916504  0.7112016 -5.506882 6.952711e-06
+## qsec         1.225886  0.2886696  4.246676 2.161737e-04
+## am           2.935837  1.4109045  2.080819 4.671551e-02
+```
+###Diagnostics###
+The validity of a linear regression model requires that the variance of the residuals be constant and that the residuals themselves are not closely correlated to the predictor variables used in the equation. We tested these assumptions using a resitual plot and by regression the residuals against the predictor variables.  
+
+```r
+qplot(x=mtcars$wt,y=model$resid) + ylim(-5,5) + xlab("Car Weight") + ylab("Residual") + ggtitle("Residual Plot for Regression Equation (3)")
+```
+
+![](RA_Project_files/figure-html/unnamed-chunk-3-1.png) 
+
+```r
+summary(lm(model$resid~wt+qsec+am,data=mtcars))
+```
+
+```
+## 
+## Call:
+## lm(formula = model$resid ~ wt + qsec + am, data = mtcars)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.4811 -1.5555 -0.7257  1.4110  4.6610 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)
+## (Intercept) -3.561e-15  6.960e+00       0        1
+## wt           2.661e-16  7.112e-01       0        1
+## qsec         1.422e-16  2.887e-01       0        1
+## am           5.096e-16  1.411e+00       0        1
+## 
+## Residual standard error: 2.459 on 28 degrees of freedom
+## Multiple R-squared:  2.778e-32,	Adjusted R-squared:  -0.1071 
+## F-statistic: 2.592e-31 on 3 and 28 DF,  p-value: 1
+```
+Thus we can conclude there is no heterskedasticity and no issues with a non-constant residual variance. 
 
 ###Conclusions###
-After controlling for other factors and validating the model using the Akaike Information Criterion (AIC), we conclude that manual transmission vehicles do, on average, have a better gas mileage. This relationship between mpg, transmission, and weight is very well illustrated by the following graph.
+After controlling for other factors and validating the model using the Akaike Information Criterion (AIC), we conclude that manual transmission vehicles do, on average, have a better gas mileage by 2.94 mpg at the 5% confidence level. This relationship between mpg, transmission, and weight is very well illustrated by the following graph.
 
 
 ```r
-library(ggplot2)
 q<-qplot(x=wt,y=mpg,data=mtcars,colour=as.factor(am))
 q<-q + scale_color_discrete(name="Transmission",labels=c("Automatic","Manual"))
 q<-q + ggtitle("Miles per Gallon by Weight and Transmission")
@@ -177,416 +197,4 @@ q
 
 ![](RA_Project_files/figure-html/Graph-1.png) 
 
-So we can see clearly that automatics tend to be both heavier and have a lower gas mileage, but comparibly weighted manual transmission vehicles still tend to have slightly better gas mileage, as seen with equation (3).
-
-##Appendix##
-
-```r
-#All Variables
-AIC(lm(mpg ~ .,data=mtcars))
-```
-
-```
-## [1] 163.7098
-```
-
-```r
-#One Variable Removed
-AIC(lm(mpg ~ cyl + disp + hp + drat + qsec + vs + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 167.0917
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 161.7271
-```
-
-```r
-AIC(lm(mpg ~ wt + cyl + hp + drat + qsec + vs + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 162.5485
-```
-
-```r
-AIC(lm(mpg ~ wt + cyl + disp + hp + qsec + vs + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 162.0609
-```
-
-```r
-AIC(lm(mpg ~ wt + cyl + disp + hp + drat + vs + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 163.5774
-```
-
-```r
-AIC(lm(mpg ~ wt + cyl + disp + hp + drat + qsec + vs + am + carb,data=mtcars))
-```
-
-```
-## [1] 162.002
-```
-
-```r
-AIC(lm(mpg ~ wt + cyl + disp + hp + drat + qsec + vs + am + gear,data=mtcars))
-```
-
-```
-## [1] 161.7979
-```
-
-```r
-#Two Variables Removed
-AIC(lm(mpg ~ wt + hp + drat + qsec + vs + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 160.562
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + drat + qsec + vs + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 161.2852
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + qsec + vs + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 160.1542
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + vs + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 161.8442
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 159.7853
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + gear + carb,data=mtcars))
-```
-
-```
-## [1] 162.1959
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + am + carb,data=mtcars))
-```
-
-```
-## [1] 160.1196
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + vs + am + gear,data=mtcars))
-```
-
-```
-## [1] 159.8397
-```
-
-```r
-#Three Variables Removed
-AIC(lm(mpg ~ disp + hp + drat + qsec + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 163.2224
-```
-
-```r
-AIC(lm(mpg ~ wt + hp + drat + qsec + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 158.565
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + drat + qsec + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 159.2875
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + qsec + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 158.2609
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + am + gear + carb,data=mtcars))
-```
-
-```
-## [1] 161.0116
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + gear + carb,data=mtcars))
-```
-
-```
-## [1] 160.1963
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + carb,data=mtcars))
-```
-
-```
-## [1] 158.246
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am + gear,data=mtcars))
-```
-
-```
-## [1] 157.9333
-```
-
-```r
-#Four Variables Removed
-AIC(lm(mpg ~ disp + hp + drat + qsec + am + gear,data=mtcars))
-```
-
-```
-## [1] 168.1617
-```
-
-```r
-AIC(lm(mpg ~ wt + hp + drat + qsec + am + gear,data=mtcars))
-```
-
-```
-## [1] 158.0406
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + drat + qsec + am + gear,data=mtcars))
-```
-
-```
-## [1] 158.9779
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + qsec + am + gear,data=mtcars))
-```
-
-```
-## [1] 156.3469
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + am + gear,data=mtcars))
-```
-
-```
-## [1] 161.17
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + gear,data=mtcars))
-```
-
-```
-## [1] 158.4839
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec + am,data=mtcars))
-```
-
-```
-## [1] 156.2687
-```
-
-```r
-#Five Variables Removed
-AIC(lm(mpg ~ disp + hp + drat + qsec + am,data=mtcars))
-```
-
-```
-## [1] 166.1632
-```
-
-```r
-AIC(lm(mpg ~ wt + hp + drat + qsec + am,data=mtcars))
-```
-
-```
-## [1] 156.0406
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + drat + qsec + am,data=mtcars))
-```
-
-```
-## [1] 156.9826
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + qsec + am,data=mtcars))
-```
-
-```
-## [1] 154.974
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + am,data=mtcars))
-```
-
-```
-## [1] 159.3035
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + drat + qsec,data=mtcars))
-```
-
-```
-## [1] 158.2784
-```
-
-```r
-#Six Variables Removed
-AIC(lm(mpg ~ disp + hp + qsec + am,data=mtcars))
-```
-
-```
-## [1] 164.8634
-```
-
-```r
-AIC(lm(mpg ~ wt + hp + qsec + am,data=mtcars))
-```
-
-```
-## [1] 154.3274
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + qsec + am,data=mtcars))
-```
-
-```
-## [1] 155.494
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + am,data=mtcars))
-```
-
-```
-## [1] 158.0667
-```
-
-```r
-AIC(lm(mpg ~ wt + disp + hp + qsec,data=mtcars))
-```
-
-```
-## [1] 159.0696
-```
-
-```r
-#Seven Variables Removed
-AIC(lm(mpg ~ hp + qsec + am,data=mtcars))
-```
-
-```
-## [1] 165.0964
-```
-
-```r
-AIC(lm(mpg ~ wt + qsec + am,data=mtcars))
-```
-
-```
-## [1] 154.1194
-```
-
-```r
-AIC(lm(mpg ~ wt + hp + am,data=mtcars))
-```
-
-```
-## [1] 156.1348
-```
-
-```r
-AIC(lm(mpg ~ wt + hp + qsec,data=mtcars))
-```
-
-```
-## [1] 157.1426
-```
-
-```r
-#Eight Variables Removed
-AIC(lm(mpg ~ qsec + am,data=mtcars))
-```
-
-```
-## [1] 175.6022
-```
-
-```r
-AIC(lm(mpg ~ wt + am,data=mtcars))
-```
-
-```
-## [1] 168.0292
-```
-
-```r
-AIC(lm(mpg ~ wt + qsec,data=mtcars))
-```
-
-```
-## [1] 156.7205
-```
-
-```r
-#Final Model
-AIC(lm(mpg ~ wt + qsec + am,data=mtcars))
-```
-
-```
-## [1] 154.1194
-```
+So we can see clearly that automatics tend to be both heavier and have a lower gas mileage, but comparibly weighted manual transmission vehicles still tend to have slightly better gas mileage, as seen with equation (3). 
